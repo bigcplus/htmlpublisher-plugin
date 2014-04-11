@@ -12,7 +12,6 @@ import hudson.model.Run;
 import hudson.model.Descriptor;
 import hudson.Extension;
 
-
 import java.io.File;
 import java.io.IOException;
 
@@ -162,7 +161,7 @@ public class HtmlPublisherTarget extends AbstractDescribableImpl<HtmlPublisherTa
             if (this.project instanceof AbstractProject) {
                 AbstractProject abstractProject = (AbstractProject) this.project;
 
-                Run run = abstractProject.getLastSuccessfulBuild();
+                Run run = getLastBuildWithHtmlPublisher(abstractProject);
                 if (run != null) {
                     File javadocDir = getBuildArchiveDir(run);
 
@@ -173,6 +172,14 @@ public class HtmlPublisherTarget extends AbstractDescribableImpl<HtmlPublisherTa
             }
 
             return getProjectArchiveDir(this.project);
+        }
+        
+        private Run getLastBuildWithHtmlPublisher(AbstractProject abstractProject) {
+            Run lastBuild = abstractProject.getLastCompletedBuild();
+            while (lastBuild != null && lastBuild.getAction(HTMLBuildAction.class) == null) {
+                lastBuild = lastBuild.getPreviousBuild();
+            }
+            return lastBuild;
         }
 
         @Override
